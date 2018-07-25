@@ -20,7 +20,8 @@ const lightSwitch = (pin,num) =>{
 
 const http = require('http');
 http.createServer((req, res) => {
-  let r = JSON.parse(req.url.replace(/\/\?/,""))
+  console.log(req.url.replace(/\/\?/,"").replace(/%22/g,'"')+'')
+  let r = JSON.parse(req.url.replace(/\/\?/,"").replace(/%22/g,'"')+'')
   lightSwitch(r.pin,r.num);
   res.writeHead(200, {'Content-Type': 'text/plain'});
   res.end('Hello World\n');
