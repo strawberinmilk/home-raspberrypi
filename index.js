@@ -23,4 +23,4 @@ let i=0;
 setInterval(()=>{
   lightSwitch(25,i%2);
   i++;
-})
+},1000)
