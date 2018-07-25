@@ -4,7 +4,7 @@ const fs = require('fs');
 const pash = '/sys/class/gpio/'
 try{
   fs.writeFileSync(`${pash}export`, 25);
-}catch{
+}catch(e){
 }
 //fs.writeFileSync(`${pash}gpio25/direction`, 'out');
 
