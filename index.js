@@ -10,11 +10,13 @@ const setPin = (pin)=>{
     try{
       fs.writeFileSync(`${pash}export`, pin);
     }catch(e){
-    }  
-    fs.writeFileSync(`${pash}gpio${pin}/direction`, 'out');
-  }  
+    }
+    try{
+      fs.writeFileSync(`${pash}gpio${pin}/direction`, 'out');
+    }catch(e){
+    }
+  }
 }
-
 const lightSwitch = (pin,num) =>{
   if(usePin.indexOf(pin,0)===-1) setPin(pin);
   clearTimeout(timeout[pin]);
