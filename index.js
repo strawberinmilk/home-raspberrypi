@@ -1,26 +1,27 @@
 'use strict';
 
 const fs = require('fs');
-const pash = '/sys/class/gpio/'
-try{
-  fs.writeFileSync(`${pash}export`, 25);
-}catch(e){
+const pash = '/sys/class/gpio/';
+const usePin = [25];
+if(process.platform!='darwin'){
+  for(let i=0;i<usePin.length;i++){
+    try{
+      fs.writeFileSync(`${pash}export`, 25);
+    }catch(e){
+    }  
+    fs.writeFileSync(`${pash}gpio25/direction`, 'out');
+  }  
 }
-//fs.writeFileSync(`${pash}gpio25/direction`, 'out');
-
-/*
-const stop = ()=>{
-  fs.writeFileSync(`${pash}unexport`, 25);
-}
-*/
 
 const lightSwitch = (pin,num) =>{
-  fs.writeFileSync(`${pash}gpio${pin}/value`, num);
+  if(process.platform!='darwin') fs.writeFileSync(`${pash}gpio${pin}/value`, num);
+  console.log(`${pin} ${num}`)
 }
 
-let i=0;
-
-setInterval(()=>{
-  lightSwitch(25,i%2);
-  i++;
-},1000)
+const http = require('http');
+http.createServer((req, res) => {
+  let r = JSON.parse(req.url.replace(/\/\?/,""))
+  lightSwitch(r.pin,r.num);
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.end('Hello World\n');
+}).listen(9001);
