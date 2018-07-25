@@ -7,13 +7,11 @@ let timeout = [];
 
 const setPin = (pin)=>{
   if(process.platform!='darwin'){
-    for(let i=0;i<usePin.length;i++){
-      try{
-        fs.writeFileSync(`${pash}export`, pin);
-      }catch(e){
-      }  
-      fs.writeFileSync(`${pash}gpio${pin}/direction`, 'out');
+    try{
+      fs.writeFileSync(`${pash}export`, pin);
+    }catch(e){
     }  
+    fs.writeFileSync(`${pash}gpio${pin}/direction`, 'out');
   }  
 }
 
