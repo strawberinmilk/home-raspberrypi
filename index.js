@@ -27,11 +27,13 @@ const lightSwitch = (pin,num) =>{
 const http = require('http');
 http.createServer((req, res) => {
   let r;
+console.log(req.url)
   try{
-    r = JSON.parse(req.url.replace(/\/\?/,"").replace(/%22/g,'"')+'');
+    r = JSON.parse(decodeURIComponent(req.url.replace(/\/\?/,"")));
+
   }catch(e){
   }
-  if(r&&r.pin+1&&r.num+1){
+  if(r/*&&r.pin+1&&r.num+1*/){
     let text = `pin:${r.pin} num:${r.num} `;
     if(r.time){
       clearTimeout(timeout[r.pin]);
