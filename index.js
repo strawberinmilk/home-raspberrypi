@@ -17,8 +17,8 @@ const setPin = (pin)=>{
     }
   }
 }
+setPin(25)
 const lightSwitch = (pin,num) =>{
-  if(usePin.indexOf(pin,0)===-1) setPin(pin);
   clearTimeout(timeout[pin]);
   if(process.platform!='darwin') fs.writeFileSync(`${pash}gpio${pin}/value`, num);
   console.log(`${pin} ${num}`);
@@ -27,9 +27,8 @@ const lightSwitch = (pin,num) =>{
 const http = require('http');
 http.createServer((req, res) => {
   let r;
-console.log(req.url)
   try{
-    r = JSON.parse(decodeURIComponent(req.url.replace(/\/\?/,"")));
+    r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,"")));
 
   }catch(e){
   }
