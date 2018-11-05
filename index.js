@@ -1,18 +1,19 @@
 'use strict';
 
 const fs = require('fs');
-const pash = '/sys/class/gpio/';
+const request = require("request");
+const path = '/sys/class/gpio/';
 const usePin = [];
 let timeout = [];
 
 const setPin = (pin)=>{
   if(process.platform!='darwin'){
     try{
-      fs.writeFileSync(`${pash}export`, pin);
+      fs.writeFileSync(`${path}export`, pin);
     }catch(e){
     }
     try{
-      fs.writeFileSync(`${pash}gpio${pin}/direction`, 'out');
+      fs.writeFileSync(`${path}gpio${pin}/direction`, 'out');
     }catch(e){
     }
   }
@@ -20,9 +21,34 @@ const setPin = (pin)=>{
 setPin(25)
 const lightSwitch = (pin,num) =>{
   clearTimeout(timeout[pin]);
-  if(process.platform!='darwin') fs.writeFileSync(`${pash}gpio${pin}/value`, num);
+  if(process.platform!='darwin') fs.writeFileSync(`${path}gpio${pin}/value`, num);
   console.log(`${pin} ${num}`);
 }
+
+
+//fs.writeFileSync(`${path}export`,'21')
+try{
+  fs.writeFileSync(`${path}gpio21/direction`,'in')
+}catch(e){}
+let oldStatus = 0;
+setInterval(()=>{
+  let newStatus = fs.readFileSync(`${path}gpio21/value`,'utf8')
+  if(newStatus != oldStatus){
+    oldStatus = newStatus
+    let text = ""
+    if(newStatus == 0){
+      text = "close"
+    }else{
+      text = "open"
+    }
+    request.get({
+      url: `http://192.168.0.61:9002/?{"channel":"doorlog","text":"${text}"}`,
+    }, function (error, response, body) {
+      console.log(body)
+    })
+  }
+},1000)
+
 
 const http = require('http');
 http.createServer((req, res) => {
@@ -48,3 +74,5 @@ http.createServer((req, res) => {
     res.end(`The request was successful.\nBut the query is broken.`);
   }
 }).listen(9001);
+
+
