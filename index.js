@@ -18,6 +18,7 @@ const setPin = (pin)=>{
     }
   }
 }
+setPin(21)
 setPin(25)
 const lightSwitch = (pin,num) =>{
   clearTimeout(timeout[pin]);
