@@ -41,6 +41,7 @@ setInterval(()=>{
       text = "close"
     }else{
       text = "open"
+      lightSwitch(25,1)
     }
     request.get({
       url: `http://192.168.0.61:9002/?{"channel":"doorlog","text":"${text}"}`,
