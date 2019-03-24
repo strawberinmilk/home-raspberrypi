@@ -44,7 +44,7 @@ setInterval(()=>{
       lightSwitch(25,1)
     }
     request.get({
-      url: `http://192.168.0.61:9002/?{"channel":"doorlog","text":"${text}"}`,
+      url: `http://192.168.0.62:9002/?{"channel":"doorlog","text":"${text}"}`,
     }, function (error, response, body) {
       console.log(body)
     })
