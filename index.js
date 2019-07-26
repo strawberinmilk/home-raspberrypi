@@ -28,11 +28,11 @@ const lightSwitch = (pin,num) =>{
   clearTimeout(timeout[pin])
   if(process.platform!='darwin') fs.writeFileSync(`${path}gpio${pin}/value`, num)
   servo.open().then(()=>{  
-    servo.setDegree(num?11:6)
+    servo.setDegree(num?120:60)
   })
   setTimeout(()=>{
     servo.open().then(()=>{  
-      servo.setDegree(9)
+      servo.setDegree(90)
     })
   },500)
   console.log(`${pin} ${num}`)
