@@ -2,6 +2,9 @@
 
 const fs = require('fs');
 const request = require("request");
+const PiServo = require('pi-servo')
+const servo = new PiServo(4)
+
 const path = '/sys/class/gpio/';
 const usePin = [];
 let timeout = [];
@@ -20,10 +23,19 @@ const setPin = (pin)=>{
 }
 setPin(21)
 setPin(25)
+
 const lightSwitch = (pin,num) =>{
-  clearTimeout(timeout[pin]);
-  if(process.platform!='darwin') fs.writeFileSync(`${path}gpio${pin}/value`, num);
-  console.log(`${pin} ${num}`);
+  clearTimeout(timeout[pin])
+  if(process.platform!='darwin') fs.writeFileSync(`${path}gpio${pin}/value`, num)
+  servo.open().then(()=>{  
+    servo.setDegree(num?11:6)
+  })
+  setTimeout(()=>{
+    servo.open().then(()=>{  
+      servo.setDegree(9)
+    })
+  },500)
+  console.log(`${pin} ${num}`)
 }
 
 
