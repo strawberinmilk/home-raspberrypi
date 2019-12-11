@@ -1,13 +1,13 @@
-'use strict';
+'use strict'
 
-const fs = require('fs');
-const request = require("request");
+const fs = require('fs')
+const request = require('request')
 const PiServo = require('pi-servo')
 const servo = new PiServo(4)
 
-const path = '/sys/class/gpio/';
-const usePin = [];
-let timeout = [];
+const path = '/sys/class/gpio/'
+const usePin = []
+let timeout = []
 
 const setPin = (pin)=>{
   if(process.platform!='darwin'){
@@ -24,9 +24,9 @@ const setPin = (pin)=>{
 setPin(21)
 setPin(25)
 
-const lightSwitch = (pin,num) =>{
-  clearTimeout(timeout[pin])
-  if(process.platform!='darwin') fs.writeFileSync(`${path}gpio${pin}/value`, num)
+const lightSwitch = (num) =>{
+  clearTimeout(timeout[25])
+  if(process.platform!='darwin') fs.writeFileSync(`${path}gpio25/value`, num)
   servo.open().then(()=>{  
     servo.setDegree(num?120:60)
   })
@@ -35,10 +35,10 @@ const lightSwitch = (pin,num) =>{
       servo.setDegree(90)
     })
   },500)
-  console.log(`${pin} ${num}`)
+  console.log(`ligth ${num}`)
 }
 
-
+//ドア監視
 //fs.writeFileSync(`${path}export`,'21')
 try{
   fs.writeFileSync(`${path}gpio21/direction`,'in')
@@ -53,7 +53,7 @@ setInterval(()=>{
       text = "close"
     }else{
       text = "open"
-      lightSwitch(25,1)
+      lightSwitch(1)
     }
     request.get({
       url: `http://192.168.0.62:9002/?{"channel":"doorlog","text":"doorlog ${text}"}`,
@@ -66,20 +66,34 @@ setInterval(()=>{
 
 const http = require('http');
 http.createServer((req, res) => {
-  let r;
+  if(req.url.match(/lighton$/gi)){
+    lightSwitch(1)
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(`light on.`);
+    return
+  }
+  if(req.url.match(/lightoff$/gi)){
+    lightSwitch(0)
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(`light on.`);
+    return
+  }
+  //legacySystem
+  let r
   try{
     r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,"")));
-
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(`The request was successful.\nBut the query is broken.`);
   }catch(e){
   }
   if(r/*&&r.pin+1&&r.num+1*/){
     let text = `pin:${r.pin} num:${r.num} `;
     if(r.time){
       clearTimeout(timeout[r.pin]);
-      timeout[r.pin] = setTimeout(()=>{lightSwitch(r.pin,r.num)},r.time);
+      timeout[r.pin] = setTimeout(()=>{lightSwitch(r.num)},r.time);
       text += ` timeout:${r.time}`;
     }else{
-      lightSwitch(r.pin,r.num);
+      lightSwitch(r.num);
     }
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end(text);
