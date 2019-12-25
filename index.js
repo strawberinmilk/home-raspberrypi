@@ -9,6 +9,14 @@ const path = '/sys/class/gpio/'
 const usePin = []
 let timeout = []
 
+let pi = false
+try{
+  fs.readdirSync('/sys/class/gpio')
+  pi = true
+}catch(e){
+  pi = false
+}
+
 const setPin = (pin)=>{
   if(process.platform!='darwin'){
     try{
@@ -26,15 +34,17 @@ setPin(25)
 
 const lightSwitch = (num) =>{
   clearTimeout(timeout[25])
-  if(process.platform!='darwin') fs.writeFileSync(`${path}gpio25/value`, num)
-  servo.open().then(()=>{  
-    servo.setDegree(num?120:60)
-  })
-  setTimeout(()=>{
+  if(pi){
+    fs.writeFileSync(`${path}gpio25/value`, num)
     servo.open().then(()=>{  
-      servo.setDegree(90)
+      servo.setDegree(num?120:60)
     })
-  },500)
+    setTimeout(()=>{
+      servo.open().then(()=>{  
+        servo.setDegree(90)
+      })
+    },500)
+  }
   console.log(`ligth ${num}`)
 }
 
@@ -43,7 +53,7 @@ const lightSwitch = (num) =>{
 try{
   fs.writeFileSync(`${path}gpio21/direction`,'in')
 }catch(e){}
-let oldStatus = 0;
+let oldStatus = 0
 setInterval(()=>{
   let newStatus = fs.readFileSync(`${path}gpio21/value`,'utf8')
   if(newStatus != oldStatus){
@@ -68,14 +78,14 @@ const http = require('http');
 http.createServer((req, res) => {
   if(req.url.match(/lighton$/gi)){
     lightSwitch(1)
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(`light on.`);
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(`light on.`)
     return
   }
   if(req.url.match(/lightoff$/gi)){
     lightSwitch(0)
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(`light on.`);
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(`light off.`)
     return
   }
   //legacySystem
