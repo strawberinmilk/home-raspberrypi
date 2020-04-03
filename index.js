@@ -11,7 +11,7 @@ let timeout = []
 
 let pi = false
 try{
-  fs.readdirSync('/sys/class/gpio')
+  fs.readdirSync(path)
   pi = true
 }catch(e){
   pi = false
@@ -19,35 +19,32 @@ try{
 
 const setPin = (pin)=>{
   try{
-    fs.writeFileSync('/sys/class/gpio/unexport',pin)
+    fs.writeFileSync(`${path}unexport`,pin)
   }catch(e){
-    console.log("a"+e)
+    console.error('a'+e)
   }
   try{
-     fs.writeFileSync('/sys/class/gpio/export',pin)
+    fs.writeFileSync(`${path}export`,pin)
   }catch(e){
-    console.log("b"+e)
+    console.error('b'+e)
   }
 }
 
 const setRPin = (pin)=>{
   if(pi){
     try{
-      //fs.writeFileSync(`${path}export`, wpin)
-      fs.writeFileSync(`/sys/class/gpio/gpio${pin}/direction` ,'in')
+      fs.writeFileSync(`${path}gpio${pin}/direction` ,'in')
     }catch(e){
-      console.log("c"+e)
+      console.error('c'+e)
     }
   }
 }
 const setWPin = (pin)=>{
-console.log(`w${pin}`)
   if(pi){
     try{
-      //fs.writeFileSync(`${path}export`, wpin)
-      fs.writeFileSync(`/sys/class/gpio/gpio${pin}/direction` ,'out')
+      fs.writeFileSync(`${path}gpio${pin}/direction` ,'out')
     }catch(e){
-      console.log("d"+e)
+      console.log('d'+e)
     }
   }
 }
@@ -55,20 +52,16 @@ const rPin = [20]
 const wPin = [25]
 const doorSensor = 20
 for(let i of rPin){
-console.log(i)
   setPin(i)
-setTimeout(()=>{
-setRPin(i)
-},300)
-  //setRPin(i)
+  setTimeout(()=>{
+    setRPin(i)
+  },300)
 }
 for(let i of wPin){
-console.log(i)
   setPin(i)
   setTimeout(()=>{
     setWPin(i)
-},300)
-//setWPin(i)
+  },300)
 }
 
 const lightSwitch = (num) =>{
@@ -85,7 +78,7 @@ const lightSwitch = (num) =>{
       })
     },500)
   }
-  console.log(`ligth ${num}`)
+  console.log(`${new Date} ligth ${num}`)
 }
 
 //ドア監視
@@ -96,17 +89,18 @@ try{
 let oldStatus = 0
 setInterval(()=>{
   let newStatus = fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8')
-  console.log(newStatus)
+  ////console.log(newStatus)
 //  let newStatus = 1
   if(newStatus != oldStatus){
     oldStatus = newStatus
-    let text = ""
+    let text = ''
     if(newStatus == 0){
-      text = "close"
+      text = 'close'
     }else{
-      text = "open"
+      text = 'open'
       lightSwitch(1)
     }
+    console.log(text)
     request.get({
       url: `http://192.168.0.62:9002/?{"channel":"doorlog","text":"doorlog ${text}"}`,
     }, function (error, response, body) {
@@ -135,7 +129,7 @@ http.createServer((req, res) => {
   //legacySystem
   let r
   try{
-    r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,"")));
+    r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,'')));
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end(`The request was successful.\nBut the query is broken.`);
   }catch(e){
