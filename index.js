@@ -18,29 +18,69 @@ try{
 }
 
 const setPin = (pin)=>{
-  if(process.platform!='darwin'){
+  try{
+    fs.writeFileSync('/sys/class/gpio/unexport',pin)
+  }catch(e){
+    console.log("a"+e)
+  }
+  try{
+     fs.writeFileSync('/sys/class/gpio/export',pin)
+  }catch(e){
+    console.log("b"+e)
+  }
+}
+
+const setRPin = (pin)=>{
+  if(pi){
     try{
-      fs.writeFileSync(`${path}export`, pin);
+      //fs.writeFileSync(`${path}export`, wpin)
+      fs.writeFileSync(`/sys/class/gpio/gpio${pin}/direction` ,'in')
     }catch(e){
-    }
-    try{
-      fs.writeFileSync(`${path}gpio${pin}/direction`, 'out');
-    }catch(e){
+      console.log("c"+e)
     }
   }
 }
-setPin(21)
-setPin(25)
+const setWPin = (pin)=>{
+console.log(`w${pin}`)
+  if(pi){
+    try{
+      //fs.writeFileSync(`${path}export`, wpin)
+      fs.writeFileSync(`/sys/class/gpio/gpio${pin}/direction` ,'out')
+    }catch(e){
+      console.log("d"+e)
+    }
+  }
+}
+const rPin = [20]
+const wPin = [25]
+const doorSensor = 20
+for(let i of rPin){
+console.log(i)
+  setPin(i)
+setTimeout(()=>{
+setRPin(i)
+},300)
+  //setRPin(i)
+}
+for(let i of wPin){
+console.log(i)
+  setPin(i)
+  setTimeout(()=>{
+    setWPin(i)
+},300)
+//setWPin(i)
+}
 
 const lightSwitch = (num) =>{
   clearTimeout(timeout[25])
   if(pi){
+    console.log(`${path}gpio25/value,${num}`)
     fs.writeFileSync(`${path}gpio25/value`, num)
-    servo.open().then(()=>{  
+    servo.open().then(()=>{
       servo.setDegree(num?120:60)
     })
     setTimeout(()=>{
-      servo.open().then(()=>{  
+      servo.open().then(()=>{
         servo.setDegree(90)
       })
     },500)
@@ -49,13 +89,15 @@ const lightSwitch = (num) =>{
 }
 
 //ドア監視
-//fs.writeFileSync(`${path}export`,'21')
+//fs.writeFileSync(`${path}export`,doorSennsor)
 try{
-  fs.writeFileSync(`${path}gpio21/direction`,'in')
+  fs.writeFileSync(`${path}gpio${doorSensor}/direction`,'in')
 }catch(e){}
 let oldStatus = 0
 setInterval(()=>{
-  let newStatus = fs.readFileSync(`${path}gpio21/value`,'utf8')
+  let newStatus = fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8')
+  console.log(newStatus)
+//  let newStatus = 1
   if(newStatus != oldStatus){
     oldStatus = newStatus
     let text = ""
@@ -71,6 +113,8 @@ setInterval(()=>{
       console.log(body)
     })
   }
+
+
 },1000)
 
 
