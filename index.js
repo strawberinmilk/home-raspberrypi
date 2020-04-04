@@ -4,7 +4,8 @@ const fs = require('fs')
 const request = require('request')
 const PiServo = require('pi-servo')
 const servo = new PiServo(4)
-const player = require('play-sound')()
+//const player = require('play-sound')()
+const mpg321 = require('mpg321')
 
 const path = '/sys/class/gpio/'
 const usePin = []
@@ -99,6 +100,7 @@ try{
   fs.writeFileSync(`${path}gpio${doorSensor}/direction`,'in')
 }catch(e){}
 let oldStatus = 0
+let player = mpg321().remote()
 setInterval(()=>{
   let newStatus = fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8')
   ////console.log(newStatus)
@@ -111,6 +113,11 @@ setInterval(()=>{
     }else{
       text = 'open'
       lightSwitch(1)
+      player.play('./ignoreDir/mm2_01.mp3')
+      player.on('end', ()=> {
+        if(Number(oldStatus)===1)player.play('./ignoreDir/mm2_01.mp3')
+      })
+
     }
     console.log(text)
     request.get({
@@ -119,13 +126,7 @@ setInterval(()=>{
       console.log(body)
     })
   }
-
-
 },500)
-
-setInterval(()=>{
-  if(oldStatus) player.play('./ignoreDir/mm2_01.mp3'), e => {}
-},1500)
 
 
 
