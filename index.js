@@ -4,6 +4,7 @@ const fs = require('fs')
 const request = require('request')
 const PiServo = require('pi-servo')
 const servo = new PiServo(4)
+const player = require('play-sound')()
 
 const path = '/sys/class/gpio/'
 const usePin = []
@@ -15,6 +16,17 @@ try{
   pi = true
 }catch(e){
   pi = false
+}
+
+try{
+  fs.statSync('./ignoreDir/mm2_01.mp3')
+}catch(e){
+  request.get({
+    url: 'http://www.proface.co.jp/signaling/other_contents/sound/mp3/mm2_01.mp3',
+    encoding: null
+  }, (error, response, body)=> {
+    fs.writeFileSync('./ignoreDir/mm2_01.mp3',body)
+  })
 }
 
 const setPin = (pin)=>{
@@ -109,7 +121,12 @@ setInterval(()=>{
   }
 
 
-},1000)
+},500)
+
+setInterval(()=>{
+  if(oldStatus) player.play('./ignoreDir/mm2_01.mp3'), e => {}
+},1500)
+
 
 
 const http = require('http');
