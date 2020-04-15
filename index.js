@@ -102,7 +102,7 @@ try{
   fs.writeFileSync(`${path}gpio${doorSensor}/direction`,'in')
 }catch(e){}
 let oldStatus = 0
-let player = mpg321().remote()
+//let player = mpg321().remote()
 
 setInterval(()=>{
   let newStatus = fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8')
