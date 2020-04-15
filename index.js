@@ -83,7 +83,7 @@ const lightSwitch = (num) =>{
     console.log(`${path}gpio25/value,${num}`)
     fs.writeFileSync(`${path}gpio25/value`, num)
     servo.open().then(()=>{
-      servo.setDegree(num?130:50)
+      servo.setDegree(num?140:70)
     })
     setTimeout(()=>{
       servo.open().then(()=>{
