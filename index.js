@@ -5,7 +5,7 @@ const request = require('request')
 const PiServo = require('pi-servo')
 const servo = new PiServo(4)
 //const player = require('play-sound')()
-const mpg321 = require('mpg321')
+//const mpg321 = require('mpg321')
 
 const path = '/sys/class/gpio/'
 const usePin = []
@@ -19,6 +19,7 @@ try{
   pi = false
 }
 
+/*
 try{
   fs.statSync('./ignoreDir/mm2_01.mp3')
 }catch(e){
@@ -28,7 +29,7 @@ try{
   }, (error, response, body)=> {
     fs.writeFileSync('./ignoreDir/mm2_01.mp3',body)
   })
-}
+}*/
 
 const setPin = (pin)=>{
   try{
@@ -64,6 +65,7 @@ const setWPin = (pin)=>{
 const rPin = [20]
 const wPin = [25]
 const doorSensor = 20
+
 for(let i of rPin){
   setPin(i)
   setTimeout(()=>{
@@ -101,6 +103,7 @@ try{
 }catch(e){}
 let oldStatus = 0
 let player = mpg321().remote()
+
 setInterval(()=>{
   let newStatus = fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8')
   ////console.log(newStatus)
@@ -113,10 +116,10 @@ setInterval(()=>{
     }else{
       text = 'open'
       lightSwitch(1)
-      player.play('./ignoreDir/mm2_01.mp3')
-      player.on('end', ()=> {
-        if(Number(oldStatus)===1)player.play('./ignoreDir/mm2_01.mp3')
-      })
+//      player.play('./ignoreDir/mm2_01.mp3')
+//      player.on('end', ()=> {
+//        if(Number(oldStatus)===1)player.play('./ignoreDir/mm2_01.mp3')
+//      })
 
     }
     console.log(text)
@@ -144,7 +147,8 @@ http.createServer((req, res) => {
     res.end(`light off.`)
     return
   }
-  //legacySystem
+
+//legacySystem
   let r
   try{
     r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,'')));
@@ -168,5 +172,4 @@ http.createServer((req, res) => {
     res.end(`The request was successful.\nBut the query is broken.`);
   }
 }).listen(9001);
-
 
