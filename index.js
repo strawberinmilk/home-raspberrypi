@@ -4,8 +4,6 @@ const fs = require('fs')
 const request = require('request')
 const PiServo = require('pi-servo')
 const servo = new PiServo(4)
-//const player = require('play-sound')()
-//const mpg321 = require('mpg321')
 
 const path = '/sys/class/gpio/'
 const usePin = []
@@ -18,18 +16,6 @@ try{
 }catch(e){
   pi = false
 }
-
-/*
-try{
-  fs.statSync('./ignoreDir/mm2_01.mp3')
-}catch(e){
-  request.get({
-    url: 'http://www.proface.co.jp/signaling/other_contents/sound/mp3/mm2_01.mp3',
-    encoding: null
-  }, (error, response, body)=> {
-    fs.writeFileSync('./ignoreDir/mm2_01.mp3',body)
-  })
-}*/
 
 const setPin = (pin)=>{
   try{
@@ -66,24 +52,22 @@ const rPin = [20]
 const wPin = [25]
 const doorSensor = 20
 
-for(let i of rPin){
+if(pi) for(let i of rPin){
   setPin(i)
   setTimeout(()=>{
     setRPin(i)
   },300)
 }
-for(let i of wPin){
+if(pi) for(let i of wPin){
   setPin(i)
   setTimeout(()=>{
     setWPin(i)
   },300)
 }
 
-const lightSwitch = (num) =>{
+const light1 = num =>{
   clearTimeout(timeout[25])
   if(pi){
-    console.log(`${path}gpio25/value,${num}`)
-    fs.writeFileSync(`${path}gpio25/value`, num)
     servo.open().then(()=>{
       servo.setDegree(num?140:70)
     })
@@ -93,21 +77,27 @@ const lightSwitch = (num) =>{
       })
     },500)
   }
-  console.log(`${new Date} ligth ${num}`)
+  console.log(`light1(Servo) ${num}`)
+}
+const light2 = num =>{
+  if(pi) fs.writeFileSync(`${path}gpio25/value`, num)
+  console.log(`ligth2 ${num}`)
 }
 
+const lightSwitch = (num) =>{
+  light1(num)
+  light2(num)
+}
 //ドア監視
+
 //fs.writeFileSync(`${path}export`,doorSennsor)
 try{
   fs.writeFileSync(`${path}gpio${doorSensor}/direction`,'in')
 }catch(e){}
 let oldStatus = 0
-//let player = mpg321().remote()
 
 setInterval(()=>{
-  let newStatus = fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8')
-  ////console.log(newStatus)
-//  let newStatus = 1
+  let newStatus = pi ? fs.readFileSync(`${path}gpio${doorSensor}/value`,'utf8') : 0
   if(newStatus != oldStatus){
     oldStatus = newStatus
     let text = ''
@@ -116,11 +106,6 @@ setInterval(()=>{
     }else{
       text = 'open'
       lightSwitch(1)
-//      player.play('./ignoreDir/mm2_01.mp3')
-//      player.on('end', ()=> {
-//        if(Number(oldStatus)===1)player.play('./ignoreDir/mm2_01.mp3')
-//      })
-
     }
     console.log(text)
     request.get({
@@ -133,7 +118,7 @@ setInterval(()=>{
 
 
 
-const http = require('http');
+const http = require('http')
 http.createServer((req, res) => {
   if(req.url.match(/lighton$/gi)){
     lightSwitch(1)
@@ -148,28 +133,41 @@ http.createServer((req, res) => {
     return
   }
 
-//legacySystem
   let r
   try{
-    r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,'')));
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(`The request was successful.\nBut the query is broken.`);
+    r = JSON.parse(decodeURIComponent(req.url.replace(/\/|\?/gi,'')))
   }catch(e){
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(`The request was successful.\nBut the query is broken.\nerrorType1 parseError`)
+    return
   }
-  if(r/*&&r.pin+1&&r.num+1*/){
-    let text = `pin:${r.pin} num:${r.num} `;
-    if(r.time){
-      clearTimeout(timeout[r.pin]);
-      timeout[r.pin] = setTimeout(()=>{lightSwitch(r.num)},r.time);
-      text += ` timeout:${r.time}`;
-    }else{
-      lightSwitch(r.num);
+  
+  //newSystem
+  if(r.signal=='light'){
+    const functionList = {'signal':()=>{},'light1':light1,'light2':light2}
+    for(let i in r){
+      functionList[i](r[i])
     }
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(text);
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(`success\ntypeLight`)
+    return
+  //legacySystem
+  }else if(!!r.pin&&!!r.num){
+    let text = `pin:${r.pin} num:${r.num} `
+    if(r.time){
+      clearTimeout(timeout[r.pin])
+      timeout[r.pin] = setTimeout(()=>{lightSwitch(r.num)},r.time)
+      text += ` timeout:${r.time}`
+    }else{
+      lightSwitch(r.num)
+    }
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(text)
+    return
   }else{
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(`The request was successful.\nBut the query is broken.`);
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(`The request was successful.\nBut the query is broken.\nerrortype3`)
+    return
   }
-}).listen(9001);
+}).listen(9001)
 
