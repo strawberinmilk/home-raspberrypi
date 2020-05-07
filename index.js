@@ -116,17 +116,33 @@ setInterval(()=>{
   }
 },500)
 
-
-
 const http = require('http')
 http.createServer((req, res) => {
-  if(req.url.match(/lighton$/gi)){
+  const URL = req.url.toLowerCase()
+  //console.log(URL)
+
+  if(URL.match(/^\/console/gi)){
+    let data
+    try{
+      data = fs.readFileSync(`./console${URL}`,'utf8')
+    }catch(e){}
+    if(data){
+      res.writeHead(200)
+      res.end(data)
+    }else{
+      res.writeHead(404)
+      res.end('the url console page is not found')
+    }
+    return
+  }
+  
+  if(URL.match(/lighton$/gi)){
     lightSwitch(1)
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`light on.`)
     return
   }
-  if(req.url.match(/lightoff$/gi)){
+  if(URL.match(/lightoff$/gi)){
     lightSwitch(0)
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`light off.`)
@@ -146,7 +162,7 @@ http.createServer((req, res) => {
   if(r.signal=='light'){
     const functionList = {'signal':()=>{},'light1':light1,'light2':light2}
     for(let i in r){
-      functionList[i](r[i])
+      if(functionList[i]) functionList[i](r[i])
     }
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`success\ntypeLight`)
@@ -165,7 +181,7 @@ http.createServer((req, res) => {
     res.end(text)
     return
   }else{
-    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.writeHead(202, {'Content-Type': 'text/plain'})
     res.end(`The request was successful.\nBut the query is broken.\nerrortype3`)
     return
   }

@@ -1,0 +1,28 @@
+.lightSwitchArea{
+  height: 100px;
+  width: 140px;
+  margin: 5px;
+  background-color: #00eaff;
+}
+.switchName{
+  display:flex;
+  justify-content: center;
+  margin:0px;
+}
+.switchArea{
+  height: 80px;
+  width: 140px;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+.switch{
+  height: 50px;
+  width : 50px;
+  margin: 5px;
+  background-color: rgb(151, 132, 255);
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+
