@@ -10,6 +10,15 @@ const usePin = []
 let timeout = []
 
 let pi = false
+const lightStatus = {
+  'light1':0,
+  'light2':0,
+}
+const roomStatus = {
+  'sleep':false,
+  'leave':false,
+}
+
 try{
   fs.readdirSync(path)
   pi = true
@@ -71,20 +80,22 @@ const light1 = num =>{
     servo.open().then(()=>{
       servo.setDegree(num?140:70)
     })
-    setTimeout(()=>{
+    timeout[25] = setTimeout(()=>{
       servo.open().then(()=>{
         servo.setDegree(90)
       })
     },500)
   }
+  lightStatus.light1 = num
   console.log(`light1(Servo) ${num}`)
 }
 const light2 = num =>{
   if(pi) fs.writeFileSync(`${path}gpio25/value`, num)
+  lightStatus.light2 = num
   console.log(`ligth2 ${num}`)
 }
 
-const lightSwitch = (num) =>{
+const lightAll = (num) =>{
   light1(num)
   light2(num)
 }
@@ -103,9 +114,11 @@ setInterval(()=>{
     let text = ''
     if(newStatus == 0){
       text = 'close'
+      if(roomStatus.leave==true)lightAll(0)
+      roomStatus.leave = false
     }else{
       text = 'open'
-      lightSwitch(1)
+      if(roomStatus.sleep==false)lightAll(1)
     }
     console.log(text)
     request.get({
@@ -119,8 +132,14 @@ setInterval(()=>{
 const http = require('http')
 http.createServer((req, res) => {
   const URL = req.url.toLowerCase()
-  //console.log(URL)
-
+  if(!pi)console.log(URL)
+  if(URL.match(/^\/$/gi)){
+    res.writeHead(302, {
+      'Location': '/console.html'
+    })
+    res.end()
+    return
+  }
   if(URL.match(/^\/console/gi)){
     let data
     try{
@@ -137,13 +156,13 @@ http.createServer((req, res) => {
   }
   
   if(URL.match(/lighton$/gi)){
-    lightSwitch(1)
+    lightAll(1)
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`light on.`)
     return
   }
   if(URL.match(/lightoff$/gi)){
-    lightSwitch(0)
+    lightAll(0)
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`light off.`)
     return
@@ -159,27 +178,27 @@ http.createServer((req, res) => {
   }
   
   //newSystem
+  //sample - /?{"signal":"light","light1":1}
   if(r.signal=='light'){
-    const functionList = {'signal':()=>{},'light1':light1,'light2':light2}
+    const functionList = {'signal':()=>{},'lightAll':lightAll,'light1':light1,'light2':light2}
     for(let i in r){
       if(functionList[i]) functionList[i](r[i])
     }
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`success\ntypeLight`)
     return
-  //legacySystem
-  }else if(!!r.pin&&!!r.num){
-    let text = `pin:${r.pin} num:${r.num} `
-    if(r.time){
-      clearTimeout(timeout[r.pin])
-      timeout[r.pin] = setTimeout(()=>{lightSwitch(r.num)},r.time)
-      text += ` timeout:${r.time}`
-    }else{
-      lightSwitch(r.num)
+    // http://localhost:9001/?{%22signal%22:%22writestatus%22,%22sleep%22:true}
+  } else if(r.signal=='status'){
+    for(let i in r){
+      roomStatus[i]=r[i]
     }
+    delete roomStatus.signal
     res.writeHead(200, {'Content-Type': 'text/plain'})
-    res.end(text)
+    res.end(`success\ntypeLight`)
     return
+  }else if(r.signal=='question'){
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(`${JSON.stringify(lightStatus)}/${JSON.stringify(roomStatus)}`)
   }else{
     res.writeHead(202, {'Content-Type': 'text/plain'})
     res.end(`The request was successful.\nBut the query is broken.\nerrortype3`)
@@ -187,3 +206,16 @@ http.createServer((req, res) => {
   }
 }).listen(9001)
 
+ //legacySystem
+  /*}else if(!!r.pin&&!!r.num){
+    let text = `pin:${r.pin} num:${r.num} `
+    if(r.time){
+      clearTimeout(timeout[r.pin])
+      timeout[r.pin] = setTimeout(()=>{lightAll(r.num)},r.time)
+      text += ` timeout:${r.time}`
+    }else{
+      lightAll(r.num)
+    }
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end(text)
+    return*/

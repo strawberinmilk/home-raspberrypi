@@ -4,6 +4,12 @@
   margin: 5px;
   background-color: #00eaff;
 }
+.statusSwitchArea{
+  height: 100px;
+  width: 140px;
+  margin: 5px;
+  background-color: #00ff15;
+}
 .switchName{
   display:flex;
   justify-content: center;

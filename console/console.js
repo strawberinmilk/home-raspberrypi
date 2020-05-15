@@ -1,5 +1,4 @@
-
-const ajax = (url)=>{
+const ajax = async (url)=>{
   let xhr = new XMLHttpRequest()
   xhr.onreadystatechange = ()=>{
     if(xhr.readyState === 4){
@@ -29,9 +28,31 @@ for(let i of lightSwitchList){
   }
 }
 
+const statusSwitchList = document.getElementsByClassName('statusSwitch')
+
+for(let i of statusSwitchList){
+  i.onclick = ()=>{
+    console.log(i.id)
+    const url = `/?{"signal":"status","${i.id.split('-')[0]}":${i.id.split('-')[1]}}`
+    ajax(url)
+  }
+}
 document.getElementById('allOnSwitch').onclick = ()=>{
   ajax('lighton')
 }
 document.getElementById('allOffSwitch').onclick = ()=>{
   ajax('lightoff')
+}
+
+
+document.getElementById('reloadArea').onclick = ()=>{
+  let xhr = new XMLHttpRequest()
+  xhr.onreadystatechange = ()=>{
+    if(xhr.readyState === 4) if(xhr.status === 200){
+      console.log(xhr.responseText)
+      window.alert(xhr.responseText)
+    }
+  }
+  xhr.open('GET',`/?{"signal":"question"}`,true)
+  xhr.send(null)
 }
