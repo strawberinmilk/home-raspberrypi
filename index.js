@@ -10,11 +10,9 @@ const usePin = []
 let timeout = []
 
 let pi = false
-const lightStatus = {
+const status = {
   'light1':0,
   'light2':0,
-}
-const roomStatus = {
   'sleep':false,
   'leave':false,
 }
@@ -26,6 +24,7 @@ try{
   pi = false
 }
 
+//setting-------------------------------------------
 const setPin = (pin)=>{
   try{
     fs.writeFileSync(`${path}unexport`,pin)
@@ -74,6 +73,7 @@ if(pi) for(let i of wPin){
   },300)
 }
 
+//lightSwitch-------------------------------------------
 const light1 = num =>{
   clearTimeout(timeout[25])
   if(pi){
@@ -86,12 +86,12 @@ const light1 = num =>{
       })
     },500)
   }
-  lightStatus.light1 = num
+  status.light1 = num
   console.log(`light1(Servo) ${num}`)
 }
 const light2 = num =>{
   if(pi) fs.writeFileSync(`${path}gpio25/value`, num)
-  lightStatus.light2 = num
+  status.light2 = num
   console.log(`ligth2 ${num}`)
 }
 
@@ -99,7 +99,7 @@ const lightAll = (num) =>{
   light1(num)
   light2(num)
 }
-//ドア監視
+//ドア監視-------------------------------------------
 
 //fs.writeFileSync(`${path}export`,doorSennsor)
 try{
@@ -114,11 +114,11 @@ setInterval(()=>{
     let text = ''
     if(newStatus == 0){
       text = 'close'
-      if(roomStatus.leave==true)lightAll(0)
-      roomStatus.leave = false
+      if(status.leave==true)lightAll(0)
+      status.leave = false
     }else{
       text = 'open'
-      if(roomStatus.sleep==false)lightAll(1)
+      if(status.sleep==false)lightAll(1)
     }
     console.log(text)
     request.get({
@@ -129,6 +129,7 @@ setInterval(()=>{
   }
 },500)
 
+//http-------------------------------------------
 const http = require('http')
 http.createServer((req, res) => {
   const URL = req.url.toLowerCase()
@@ -187,18 +188,18 @@ http.createServer((req, res) => {
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`success\ntypeLight`)
     return
-    // http://localhost:9001/?{%22signal%22:%22writestatus%22,%22sleep%22:true}
+    // http://localhost:9001/?{%22signal%22:%22status%22,%22sleep%22:true}
   } else if(r.signal=='status'){
     for(let i in r){
-      roomStatus[i]=r[i]
+      status[i]=r[i]
     }
-    delete roomStatus.signal
+    delete status.signal
     res.writeHead(200, {'Content-Type': 'text/plain'})
     res.end(`success\ntypeLight`)
     return
   }else if(r.signal=='question'){
     res.writeHead(200, {'Content-Type': 'text/plain'})
-    res.end(`${JSON.stringify(lightStatus)}/${JSON.stringify(roomStatus)}`)
+    res.end(`${JSON.stringify(status)}`)
   }else{
     res.writeHead(202, {'Content-Type': 'text/plain'})
     res.end(`The request was successful.\nBut the query is broken.\nerrortype3`)

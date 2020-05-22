@@ -1,9 +1,36 @@
+const toggleWrite = ()=>{
+  let xhr = new XMLHttpRequest()
+  xhr.onreadystatechange = ()=>{
+    if(xhr.readyState === 4) if(xhr.status === 200){
+      console.log(xhr.responseText)
+      const toggle = document.getElementsByClassName('toggle')
+      const json = JSON.parse(xhr.responseText)
+      for(let i of toggle){
+        i.style.color = '#f00';
+        const name = i.id.replace(/toggle|on|off/gi,'')
+        const onof = !!i.id.match(/on/gi)
+        console.log(`${name} ${onof} ${!!json[name]===onof}`)
+        //if(!!json[name]===onof){
+        //  i.style.backgroundColor = "#FF00FF"
+        //}else{
+        //  i.style.backgroundColor = "#c0c0c0"
+        //}
+        i.style.backgroundColor = !!json[name]===onof ? "#FF00FF" : "#c0c0c0"
+      }
+    }
+  }
+  xhr.open('GET',`/?{"signal":"question"}`,true)
+  xhr.send(null)
+}
+toggleWrite()
+
 const ajax = async (url)=>{
   let xhr = new XMLHttpRequest()
   xhr.onreadystatechange = ()=>{
     if(xhr.readyState === 4){
       if(xhr.status === 200){
         document.getElementById('status').innerText = 'success'
+        toggleWrite()
         console.log(xhr.responseText)
       }else if(xhr.status === 404){
         document.getElementById('status').innerText = '404 notfound'
@@ -43,16 +70,6 @@ document.getElementById('allOnSwitch').onclick = ()=>{
 document.getElementById('allOffSwitch').onclick = ()=>{
   ajax('lightoff')
 }
-
-
 document.getElementById('reloadArea').onclick = ()=>{
-  let xhr = new XMLHttpRequest()
-  xhr.onreadystatechange = ()=>{
-    if(xhr.readyState === 4) if(xhr.status === 200){
-      console.log(xhr.responseText)
-      window.alert(xhr.responseText)
-    }
-  }
-  xhr.open('GET',`/?{"signal":"question"}`,true)
-  xhr.send(null)
+  toggleWrite()
 }

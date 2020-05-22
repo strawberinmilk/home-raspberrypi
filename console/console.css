@@ -32,3 +32,8 @@
   align-items: center;
 }
 
+.toggle{
+  height:50px;
+  width:5px;
+  background-color: rgb(167, 167, 167);
+}
