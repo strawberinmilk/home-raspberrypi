@@ -97,7 +97,7 @@ const light2 = num =>{
 }
 const light3 = num =>{
   if(pi) fs.writeFileSync(`${path}gpio8/value`, num)
-  status.light2 = num
+  status.light3 = num
   console.log(`ligth3 ${num}`)
 }
 
@@ -188,7 +188,7 @@ http.createServer((req, res) => {
   //newSystem
   //sample - /?{"signal":"light","light1":1}
   if(r.signal=='light'){
-    const functionList = {'signal':()=>{},'lightAll':lightAll,'light1':light1,'light2':light2}
+    const functionList = {'signal':()=>{},'lightAll':lightAll,'light1':light1,'light2':light2,'light3':light3}
     for(let i in r){
       if(functionList[i]) functionList[i](r[i])
     }

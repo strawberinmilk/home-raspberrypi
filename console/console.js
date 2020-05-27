@@ -9,7 +9,7 @@ const toggleWrite = ()=>{
         i.style.color = '#f00';
         const name = i.id.replace(/toggle|on|off/gi,'')
         const onof = !!i.id.match(/on/gi)
-        console.log(`${name} ${onof} ${!!json[name]===onof}`)
+        //console.log(`${name} ${onof} ${!!json[name]===onof}`)
         //if(!!json[name]===onof){
         //  i.style.backgroundColor = "#FF00FF"
         //}else{
