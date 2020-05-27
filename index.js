@@ -13,6 +13,7 @@ let pi = false
 const status = {
   'light1':0,
   'light2':0,
+  'light3':0,
   'sleep':false,
   'leave':false,
 }
@@ -57,7 +58,7 @@ const setWPin = (pin)=>{
   }
 }
 const rPin = [20]
-const wPin = [25]
+const wPin = [25,8]
 const doorSensor = 20
 
 if(pi) for(let i of rPin){
@@ -94,10 +95,16 @@ const light2 = num =>{
   status.light2 = num
   console.log(`ligth2 ${num}`)
 }
+const light3 = num =>{
+  if(pi) fs.writeFileSync(`${path}gpio8/value`, num)
+  status.light2 = num
+  console.log(`ligth3 ${num}`)
+}
 
 const lightAll = (num) =>{
   light1(num)
   light2(num)
+  light3(num)
 }
 //ドア監視-------------------------------------------
 
